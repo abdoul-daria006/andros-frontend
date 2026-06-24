@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://ton-backend-en-ligne.com/api",
+  baseURL: "https://dislodge-squeamish-last.ngrok-free.dev/api",
 });
 
 // Ajoute automatiquement le token à chaque requête
