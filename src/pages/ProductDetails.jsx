@@ -87,7 +87,7 @@ function ProductDetails() {
       <section className="mt-20 bg-black text-white p-10 rounded-xl text-center">
         <h2 className="text-3xl font-bold">Besoin d'un devis ?</h2>
         <p className="mt-3">Nos experts vous accompagnent.</p>
-        <Link to={`/quote?product=${product.name}`} className="inline-block mt-6 bg-yellow-500 text-black px-8 py-4 rounded-lg font-bold">
+        <Link to={`/quote?product=${product.name}`} className="inline-block mt-6 bg-[#B8954A] text-black px-8 py-4 rounded-lg font-bold hover:bg-[#d6ba6b] transition">
           Demander un devis
         </Link>
       </section>

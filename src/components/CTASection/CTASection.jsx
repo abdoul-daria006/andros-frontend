@@ -33,7 +33,7 @@ export default function CTASection() {
 
                     <Link
                         to="/quote"
-                        className="inline-block bg-white text-black px-8 py-4 rounded-lg font-semibold hover:bg-gray-200 transition"
+                        className="inline-block bg-[#B8954A] text-black px-8 py-4 rounded-lg font-semibold hover:bg-[#d6ba6b] transition"
                     >
                         Demander un devis
                     </Link>

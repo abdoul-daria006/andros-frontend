@@ -55,7 +55,7 @@ function Footer() {
 
           <a
             href="/quote"
-            className="inline-block bg-white text-black px-5 py-3 rounded-lg font-semibold text-sm hover:bg-[#B8954A] hover:text-white transition"
+            className="inline-block bg-[#B8954A] text-black px-5 py-3 rounded-lg font-semibold text-sm border border-[#B8954A] hover:bg-[#d6ba6b] transition"
           >
             Demander un devis
           </a>

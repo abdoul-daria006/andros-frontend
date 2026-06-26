@@ -59,7 +59,7 @@ function Navbar() {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/quote"
-              className="bg-black text-white px-6 py-3 rounded-lg font-semibold border border-black hover:bg-white hover:text-black transition"
+              className="bg-[#B8954A] text-black px-6 py-3 rounded-lg font-semibold border border-[#B8954A] hover:bg-[#d6ba6b] transition"
             >
               Demander un devis
             </Link>
@@ -106,7 +106,7 @@ function Navbar() {
               <Link
                 to="/quote"
                 onClick={() => setOpen(false)}
-                className="mt-2 bg-black text-white text-center px-6 py-3 rounded-lg font-semibold"
+                className="mt-2 bg-[#B8954A] text-black text-center px-6 py-3 rounded-lg font-semibold border border-[#B8954A] hover:bg-[#d6ba6b] transition"
               >
                 Demander un devis
               </Link>
