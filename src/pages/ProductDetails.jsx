@@ -7,13 +7,17 @@ function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     setLoading(true);
     setNotFound(false);
 
     api.get(`/products/${id}`)
-      .then((res) => setProduct(res.data.data))
+      .then((res) => {
+        setProduct(res.data.data);
+        setCurrentImageIndex(0);
+      })
       .catch((err) => {
         console.error(err);
         setNotFound(true);
@@ -24,14 +28,47 @@ function ProductDetails() {
   if (loading) return <div className="p-20">Chargement...</div>;
   if (notFound || !product) return <div className="p-20">Produit introuvable</div>;
 
+  const images = Array.isArray(product.images_urls)
+    ? product.images_urls.filter(Boolean)
+    : typeof product.images_urls === "string"
+      ? [product.images_urls]
+      : [];
+  const displayImages = images.length > 0 ? images : [product.image_url || "/products/product1.jpeg"];
+
+  const previousImage = () => {
+    setCurrentImageIndex((prev) => (prev === 0 ? displayImages.length - 1 : prev - 1));
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev === displayImages.length - 1 ? 0 : prev + 1));
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-16">
       <div className="grid lg:grid-cols-2 gap-12">
-        <img
-          src={product.image_url || "/products/product1.jpeg"}
-          alt={product.name}
-          className="w-full rounded-xl shadow-lg"
-        />
+        <div className="relative">
+          <img
+            src={displayImages[currentImageIndex]}
+            alt={`${product.name} ${currentImageIndex + 1}`}
+            className="w-full rounded-xl shadow-lg object-cover h-[420px]"
+          />
+          {displayImages.length > 1 && (
+            <>
+              <button
+                onClick={previousImage}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-black"
+              >
+                ‹
+              </button>
+              <button
+                onClick={nextImage}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-black"
+              >
+                ›
+              </button>
+            </>
+          )}
+        </div>
 
         <div>
           <span className="bg-gray-200 px-4 py-2 rounded-full">{product.category}</span>

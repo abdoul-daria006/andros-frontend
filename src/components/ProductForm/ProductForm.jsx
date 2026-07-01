@@ -17,8 +17,8 @@ function ProductForm({ onSaved, editingProduct, onCancel }) {
   };
 
   const [formData, setFormData] = useState(emptyForm);
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [sheetFile, setSheetFile] = useState(null);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const [isDraggingSheet, setIsDraggingSheet] = useState(false);
@@ -40,13 +40,19 @@ function ProductForm({ onSaved, editingProduct, onCancel }) {
         thermal: editingProduct.thermal || "",
         is_featured: !!editingProduct.is_featured,
       });
-      setImagePreview(editingProduct.image_url || null);
-      setImageFile(null);
+      setImagePreviews(
+        editingProduct.images_urls?.length > 0
+          ? editingProduct.images_urls
+          : editingProduct.image_url
+            ? [editingProduct.image_url]
+            : []
+      );
+      setImageFiles([]);
       setSheetFile(null);
     } else {
       setFormData(emptyForm);
-      setImagePreview(null);
-      setImageFile(null);
+      setImagePreviews([]);
+      setImageFiles([]);
       setSheetFile(null);
     }
   }, [editingProduct]);
@@ -59,15 +65,24 @@ function ProductForm({ onSaved, editingProduct, onCancel }) {
     }));
   };
 
-  const handleImageFile = (file) => {
-    if (!file) return;
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
+  const handleImageFiles = (files) => {
+    if (!files || files.length === 0) return;
+    const selectedFiles = Array.from(files);
+    setImageFiles(selectedFiles);
+    setImagePreviews(selectedFiles.map((file) => URL.createObjectURL(file)));
   };
 
   const handleSheetFile = (file) => {
     if (!file) return;
     setSheetFile(file);
+  };
+
+  const resetForm = () => {
+    setFormData(emptyForm);
+    setImageFiles([]);
+    setImagePreviews([]);
+    setSheetFile(null);
+    setErrors({});
   };
 
   const handleSubmit = async (e) => {
@@ -85,7 +100,9 @@ function ProductForm({ onSaved, editingProduct, onCancel }) {
       }
     });
 
-    if (imageFile) data.append("image", imageFile);
+    if (imageFiles.length > 0) {
+      imageFiles.forEach((file) => data.append("images[]", file));
+    }
     if (sheetFile) data.append("fiche_produit", sheetFile);
 
     try {
@@ -95,6 +112,7 @@ function ProductForm({ onSaved, editingProduct, onCancel }) {
       } else {
         await api.post("/products", data);
       }
+      resetForm();
       onSaved();
     } catch (err) {
       if (err.response?.status === 422) {
@@ -226,17 +244,26 @@ function ProductForm({ onSaved, editingProduct, onCancel }) {
           onDrop={(e) => {
             e.preventDefault();
             setIsDraggingImage(false);
-            handleImageFile(e.dataTransfer.files[0]);
+            handleImageFiles(e.dataTransfer.files);
           }}
           onClick={() => document.getElementById("image-input").click()}
           className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition ${
             isDraggingImage ? "border-yellow-500 bg-yellow-50" : "border-gray-300"
           }`}
         >
-          {imagePreview ? (
-            <img src={imagePreview} alt="Aperçu" className="mx-auto h-32 object-contain mb-2" />
+          {imagePreviews.length > 0 ? (
+            <div className="grid grid-cols-3 gap-2 mx-auto max-w-md">
+              {imagePreviews.map((preview, index) => (
+                <img
+                  key={`${preview}-${index}`}
+                  src={preview}
+                  alt={`Aperçu ${index + 1}`}
+                  className="w-full h-32 object-cover rounded"
+                />
+              ))}
+            </div>
           ) : (
-            <p className="text-gray-500">Glissez-déposez une image ici, ou cliquez pour choisir un fichier</p>
+            <p className="text-gray-500">Glissez-déposez des images ici, ou cliquez pour choisir des fichiers</p>
           )}
 
           <input
@@ -244,10 +271,11 @@ function ProductForm({ onSaved, editingProduct, onCancel }) {
             type="file"
             accept="image/png,image/jpeg,image/jpg,image/webp"
             className="hidden"
-            onChange={(e) => handleImageFile(e.target.files[0])}
+            multiple
+            onChange={(e) => handleImageFiles(e.target.files)}
           />
         </div>
-        {errors.image && <p className="text-red-600 text-sm mt-1">{errors.image[0]}</p>}
+        {errors.images && <p className="text-red-600 text-sm mt-1">{errors.images[0]}</p>}
       </div>
 
       <div className="mt-6">
