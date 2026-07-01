@@ -66,7 +66,7 @@ function Login() {
           <label className="block text-sm font-medium text-[#3F3F46] mb-2">Email</label>
           <input
             type="email"
-            placeholder="admin@maindustry.com"
+            placeholder="........@exemple.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full border border-[#E4E4E7] p-3.5 rounded-lg focus:outline-none focus:border-black transition"
