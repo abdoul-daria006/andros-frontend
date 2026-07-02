@@ -13,8 +13,8 @@ function ProjectForm({ onSaved, editingProject, onCancel }) {
   };
 
   const [formData, setFormData] = useState(emptyForm);
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -30,12 +30,18 @@ function ProjectForm({ onSaved, editingProject, onCancel }) {
         performance: editingProject.performance || "",
         description: editingProject.description || "",
       });
-      setImagePreview(editingProject.image_url || null);
-      setImageFile(null);
+      setImagePreviews(
+        editingProject.images_urls?.length > 0
+          ? editingProject.images_urls
+          : editingProject.image_url
+            ? [editingProject.image_url]
+            : []
+      );
+      setImageFiles([]);
     } else {
       setFormData(emptyForm);
-      setImagePreview(null);
-      setImageFile(null);
+      setImagePreviews([]);
+      setImageFiles([]);
     }
   }, [editingProject]);
 
@@ -43,10 +49,11 @@ function ProjectForm({ onSaved, editingProject, onCancel }) {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleImageFile = (file) => {
-    if (!file) return;
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
+  const handleImageFiles = (files) => {
+    if (!files || files.length === 0) return;
+    const selectedFiles = Array.from(files);
+    setImageFiles(selectedFiles);
+    setImagePreviews(selectedFiles.map((file) => URL.createObjectURL(file)));
   };
 
   const handleSubmit = async (e) => {
@@ -63,7 +70,9 @@ function ProjectForm({ onSaved, editingProject, onCancel }) {
       }
     });
 
-    if (imageFile) data.append("image", imageFile);
+    if (imageFiles.length > 0) {
+      imageFiles.forEach((file) => data.append("images[]", file));
+    }
 
     try {
       if (editingProject) {
@@ -178,17 +187,26 @@ function ProjectForm({ onSaved, editingProject, onCancel }) {
           onDrop={(e) => {
             e.preventDefault();
             setIsDragging(false);
-            handleImageFile(e.dataTransfer.files[0]);
+            handleImageFiles(e.dataTransfer.files);
           }}
           onClick={() => document.getElementById("project-image-input").click()}
           className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition ${
             isDragging ? "border-yellow-500 bg-yellow-50" : "border-gray-300"
           }`}
         >
-          {imagePreview ? (
-            <img src={imagePreview} alt="Aperçu" className="mx-auto h-32 object-contain mb-2" />
+          {imagePreviews.length > 0 ? (
+            <div className="grid grid-cols-3 gap-2 mx-auto max-w-md">
+              {imagePreviews.map((preview, index) => (
+                <img
+                  key={`${preview}-${index}`}
+                  src={preview}
+                  alt={`Aperçu ${index + 1}`}
+                  className="w-full h-32 object-cover rounded"
+                />
+              ))}
+            </div>
           ) : (
-            <p className="text-gray-500">Glissez-déposez une image ici, ou cliquez pour choisir un fichier</p>
+            <p className="text-gray-500">Glissez-déposez une ou plusieurs images ici, ou cliquez pour choisir des fichiers</p>
           )}
 
           <input
@@ -196,7 +214,8 @@ function ProjectForm({ onSaved, editingProject, onCancel }) {
             type="file"
             accept="image/png,image/jpeg,image/jpg,image/webp"
             className="hidden"
-            onChange={(e) => handleImageFile(e.target.files[0])}
+            multiple
+            onChange={(e) => handleImageFiles(e.target.files)}
           />
         </div>
         {errors.image && <p className="text-red-600 text-sm mt-1">{errors.image[0]}</p>}

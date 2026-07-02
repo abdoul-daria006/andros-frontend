@@ -7,25 +7,71 @@ function ProjectDetails() {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
+    setLoading(true);
+    setNotFound(false);
+
     api.get(`/projects/${id}`)
-      .then((res) => setProject(res.data.data))
-      .catch(() => setNotFound(true))
+      .then((res) => {
+        setProject(res.data.data);
+        setCurrentImageIndex(0);
+      })
+      .catch((err) => {
+        console.error(err);
+        setNotFound(true);
+      })
       .finally(() => setLoading(false));
   }, [id]);
 
   if (loading) return <div className="p-20">Chargement...</div>;
   if (notFound || !project) return <div className="p-20">Projet introuvable</div>;
 
+  const images = Array.isArray(project.images_urls)
+    ? project.images_urls.filter(Boolean)
+    : [];
+  const displayImages = images.length > 0
+    ? images
+    : project.image_url
+      ? [project.image_url]
+      : ["/projects/placeholder.jpg"];
+
+  const previousImage = () => {
+    setCurrentImageIndex((prev) => (prev === 0 ? displayImages.length - 1 : prev - 1));
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev === displayImages.length - 1 ? 0 : prev + 1));
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-16">
       <div className="grid lg:grid-cols-2 gap-12">
-        <img
-          src={project.image_url || "/projects/placeholder.jpg"}
-          alt={project.title}
-          className="w-full rounded-xl shadow-lg"
-        />
+        <div className="relative">
+          <img
+            src={displayImages[currentImageIndex]}
+            alt={`${project.title} ${currentImageIndex + 1}`}
+            className="w-full rounded-xl shadow-lg object-cover h-[420px]"
+          />
+
+          {displayImages.length > 1 && (
+            <>
+              <button
+                onClick={previousImage}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-black"
+              >
+                ‹
+              </button>
+              <button
+                onClick={nextImage}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-black"
+              >
+                ›
+              </button>
+            </>
+          )}
+        </div>
 
         <div>
           <span className="bg-gray-200 px-4 py-2 rounded-full">{project.sector}</span>
